@@ -8,7 +8,6 @@ android {
 
     defaultConfig {
         minSdk = 21
-
         ndkVersion = "27.3.13750724"
     }
 
@@ -28,10 +27,10 @@ android {
         cmake {
             path = file("MobileGlues-cpp/CMakeLists.txt")
             version = "3.22.1"
-            arguments += if (project.hasProperty("MG_LEGACY_1122")) {
-                listOf("-DMG_LEGACY_1122=ON")
+            if (project.hasProperty("MG_LEGACY_1122")) {
+                argument("-DMG_LEGACY_1122=ON")
             } else {
-                listOf("-DMG_LEGACY_1122=OFF")
+                argument("-DMG_LEGACY_1122=OFF")
             }
         }
     }
