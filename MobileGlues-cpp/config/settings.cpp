@@ -53,7 +53,13 @@ void init_settings() {
     AngleDepthClearFixMode angleDepthClearFixMode =
         success ? static_cast<AngleDepthClearFixMode>(config_get_int("angleDepthClearFixMode"))
                 : AngleDepthClearFixMode::Disabled;
+#if MG_LEGACY_1122
+    // The dedicated 1.12.2 renderer always exposes the GL 4.0 desktop profile.
+    // Do not let an old shared config downgrade this renderer unexpectedly.
+    int customGLVersionInt = DEFAULT_GL_VERSION;
+#else
     int customGLVersionInt = success ? config_get_int("customGLVersion") : DEFAULT_GL_VERSION;
+#endif
     FSR1_Quality_Preset fsr1Setting =
         success ? static_cast<FSR1_Quality_Preset>(config_get_int("fsr1Setting")) : FSR1_Quality_Preset::Disabled;
     HideMGEnvLevel hideMGEnvLevel =
