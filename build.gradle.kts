@@ -28,6 +28,11 @@ android {
         cmake {
             path = file("MobileGlues-cpp/CMakeLists.txt")
             version = "3.22.1"
+            arguments += if (project.hasProperty("MG_LEGACY_1122")) {
+                listOf("-DMG_LEGACY_1122=ON")
+            } else {
+                listOf("-DMG_LEGACY_1122=OFF")
+            }
         }
     }
 
