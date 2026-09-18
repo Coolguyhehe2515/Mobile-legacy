@@ -1,0 +1,41 @@
+name: Build Android 1.12.2 Renderer
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK
+        run: sdkmanager "ndk;27.3.13750724"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build renderer
+        run: gradle assembleRelease -PMG_LEGACY_1122=true --no-daemon
+
+      - name: Upload Android AAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: KrispyGL40-1.12.2
+          path: |
+            **/build/outputs/aar/*.aar
+            **/build/intermediates/merged_native_libs/release/out/lib/**/*.so
+          if-no-files-found: error
