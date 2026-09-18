@@ -464,11 +464,17 @@ const GLubyte* glGetString(GLenum name) {
 
         if (shadingLangString.empty()) {
             std::string baseVer;
+#if MG_LEGACY_1122
+            // Minecraft 1.12.2 uses the legacy LWJGL 2/OpenGL path. Keep the
+            // advertised desktop GLSL level at 4.00 for this dedicated build.
+            baseVer = "4.00";
+#else
             if (hardware->es_version < 310) {
                 baseVer = "4.00";
             } else {
                 baseVer = "4.60";
             }
+#endif
 
             if (global_settings.hide_mg_env_level >= HideMGEnvLevel::Level1) {
                 shadingLangString = baseVer;
