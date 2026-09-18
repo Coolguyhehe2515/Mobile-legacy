@@ -6,6 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# Build profile for the dedicated Minecraft Java 1.12.2 renderer.
+# Keep OFF by default so the normal MobileGlues behavior is unchanged.
+option(MG_LEGACY_1122 "Enable Minecraft 1.12.2 compatibility profile" OFF)
+
 
 # glslang & SPIRV-Cross
 set(ENABLE_RTTI                ON  CACHE BOOL "Enables RTTI (will be took by glslang)" FORCE)
@@ -127,6 +131,12 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
     config/settings.cpp
     config/stats.cpp
 )
+
+if(MG_LEGACY_1122)
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE MG_LEGACY_1122=1)
+else()
+    target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE MG_LEGACY_1122=0)
+endif()
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ./includes
