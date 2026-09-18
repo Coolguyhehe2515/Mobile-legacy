@@ -23,6 +23,13 @@
 
 #define DEBUG 0
 
+// Legacy Minecraft 1.12.2 compatibility profile.
+// Keep disabled by default; enable it from the build configuration for the
+// dedicated 1.12.2 renderer so modern MobileGlues builds keep their behavior.
+#ifndef MG_LEGACY_1122
+#define MG_LEGACY_1122 0
+#endif
+
 Version GLVersion;
 
 namespace {
