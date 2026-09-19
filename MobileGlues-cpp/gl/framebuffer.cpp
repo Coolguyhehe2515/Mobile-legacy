@@ -6,6 +6,10 @@
 // End of Source File Header
 
 #include "framebuffer.h"
+
+#if MG_LEGACY_1122
+#include <EGL/egl.h>
+#endif
 #include "../egl/context.h"
 #include <mutex>
 #include <memory>
@@ -366,6 +370,35 @@ void glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint
     LOG()
     mg_fsr_read_scope_t fsr_read;
     GLES.glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+
+#if MG_LEGACY_1122
+    // Minecraft 1.12.2/OptiFine can finish a frame with a full-screen blit into
+    // the default framebuffer. GL4ES/Krypton has a compatibility workaround for
+    // this pattern: present immediately after the blit. Without it some Android
+    // EGL stacks can keep the blitted default-FBO image from reaching the surface
+    // until a later operation, which can result in a permanently white frame.
+    //
+    // Only trigger this for a real FBO -> default-FBO color blit whose destination
+    // rectangle covers the complete EGL surface. The normal application
+    // eglSwapBuffers() still runs afterward, so this is intentionally a narrow
+    // compatibility workaround rather than a replacement for normal presenting.
+    if ((mask & GL_COLOR_BUFFER_BIT) != 0 && current_draw_fbo == 0 && current_read_fbo != 0) {
+        EGLDisplay dpy = eglGetCurrentDisplay();
+        EGLSurface surface = eglGetCurrentSurface(EGL_DRAW);
+        EGLint surface_width = 0;
+        EGLint surface_height = 0;
+        if (dpy != EGL_NO_DISPLAY && surface != EGL_NO_SURFACE &&
+            eglQuerySurface(dpy, surface, EGL_WIDTH, &surface_width) == EGL_TRUE &&
+            eglQuerySurface(dpy, surface, EGL_HEIGHT, &surface_height) == EGL_TRUE) {
+            const GLint dst_width = dstX1 >= dstX0 ? dstX1 - dstX0 : dstX0 - dstX1;
+            const GLint dst_height = dstY1 >= dstY0 ? dstY1 - dstY0 : dstY0 - dstY1;
+            if (dst_width == surface_width && dst_height == surface_height) {
+                eglSwapBuffers(dpy, surface);
+            }
+        }
+    }
+#endif
+
     CHECK_GL_ERROR
 }
 
