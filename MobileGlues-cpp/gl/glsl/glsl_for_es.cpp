@@ -673,9 +673,18 @@ int get_or_add_glsl_version(std::string& glsl) {
         glsl_version = 150;
         glsl.insert(0, "#version 150\n");
     } else if (glsl_version < 140) {
-        // force upgrade glsl version
-        glsl = replace_line_starting_with(glsl, "#version", "#version 150 compatibility\n");
-        glsl_version = 150;
+        // Minecraft 1.12.2 commonly sends GLSL 1.20. glslang's compatibility
+        // built-in table contains double-precision declarations that are only
+        // legal from desktop GLSL 4.00 onward. Upgrading 1.20 to 1.50 therefore
+        // makes built-in initialization fail with:
+        //   'double' : not supported with this profile
+        //   INTERNAL ERROR: Unable to parse built-ins
+        //
+        // Use a 4.00 compatibility profile for the translation input instead.
+        // Compatibility keeps the legacy GLSL syntax accepted while giving
+        // glslang a profile/version where its generated built-ins are valid.
+        glsl = replace_line_starting_with(glsl, "#version", "#version 400 compatibility\n");
+        glsl_version = 400;
     }
 
     LOG_D("GLSL version: %d", glsl_version)
