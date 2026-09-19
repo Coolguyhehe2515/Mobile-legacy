@@ -51,7 +51,7 @@ jobs:
       - name: Upload Android native libraries
         uses: actions/upload-artifact@v4
         with:
-          name: KrispyGL40-1.12.2
+          name: Mobile-legacy-1.12.2
           path: |
             **/build/intermediates/merged_native_libs/release/out/lib/**/*.so
             **/build/outputs/aar/*.aar
