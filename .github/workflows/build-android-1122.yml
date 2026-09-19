@@ -74,11 +74,20 @@ jobs:
       - name: Prepare release assets
         if: steps.toggle.outputs.enabled == 'true'
         run: |
+          set -e
           mkdir -p release
-          cp **/build/intermediates/merged_native_libs/release/out/lib/arm64-v8a/libmobileglues.so release/libmobileglues_arm64.so
-          cp **/build/intermediates/merged_native_libs/release/out/lib/armeabi-v7a/libmobileglues.so release/libmobileglues_arm32.so
-          cp **/build/intermediates/merged_native_libs/release/out/lib/x86/libmobileglues.so release/libmobileglues_x86.so
-          cp **/build/intermediates/merged_native_libs/release/out/lib/x86_64/libmobileglues.so release/libmobileglues_x86_64.so
+
+          arm64=$(find . -path '*/build/intermediates/merged_native_libs/release/out/lib/arm64-v8a/libmobileglues.so' -type f -print -quit)
+          arm32=$(find . -path '*/build/intermediates/merged_native_libs/release/out/lib/armeabi-v7a/libmobileglues.so' -type f -print -quit)
+          x86=$(find . -path '*/build/intermediates/merged_native_libs/release/out/lib/x86/libmobileglues.so' -type f -print -quit)
+          x86_64=$(find . -path '*/build/intermediates/merged_native_libs/release/out/lib/x86_64/libmobileglues.so' -type f -print -quit)
+
+          test -n "$arm64" && test -n "$arm32" && test -n "$x86" && test -n "$x86_64"
+
+          cp "$arm64" release/libmobileglues_arm64.so
+          cp "$arm32" release/libmobileglues_arm32.so
+          cp "$x86" release/libmobileglues_x86.so
+          cp "$x86_64" release/libmobileglues_x86_64.so
 
       - name: Upload Android native libraries
         if: steps.toggle.outputs.enabled == 'true'
