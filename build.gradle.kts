@@ -4,11 +4,21 @@ plugins {
 
 android {
     namespace = "top.mobilegl.mobileglues"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 21
         ndkVersion = "27.3.13750724"
+
+        externalNativeBuild {
+            cmake {
+                arguments += if (project.hasProperty("MG_LEGACY_1122")) {
+                    listOf("-DMG_LEGACY_1122=ON")
+                } else {
+                    listOf("-DMG_LEGACY_1122=OFF")
+                }
+            }
+        }
     }
 
     buildTypes {
@@ -27,11 +37,6 @@ android {
         cmake {
             path = file("MobileGlues-cpp/CMakeLists.txt")
             version = "3.22.1"
-            if (project.hasProperty("MG_LEGACY_1122")) {
-                argument("-DMG_LEGACY_1122=ON")
-            } else {
-                argument("-DMG_LEGACY_1122=OFF")
-            }
         }
     }
 
