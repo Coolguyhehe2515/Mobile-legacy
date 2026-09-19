@@ -77,10 +77,15 @@ jobs:
           set -e
           mkdir -p release
 
-          arm64=$(find . -path '*/build/intermediates/merged_native_libs/release/out/lib/arm64-v8a/libmobileglues.so' -type f -print -quit)
-          arm32=$(find . -path '*/build/intermediates/merged_native_libs/release/out/lib/armeabi-v7a/libmobileglues.so' -type f -print -quit)
-          x86=$(find . -path '*/build/intermediates/merged_native_libs/release/out/lib/x86/libmobileglues.so' -type f -print -quit)
-          x86_64=$(find . -path '*/build/intermediates/merged_native_libs/release/out/lib/x86_64/libmobileglues.so' -type f -print -quit)
+          arm64=$(find . -type f -name libmobileglues.so -path '*/arm64-v8a/*' -print -quit)
+          arm32=$(find . -type f -name libmobileglues.so -path '*/armeabi-v7a/*' -print -quit)
+          x86=$(find . -type f -name libmobileglues.so -path '*/x86/*' -print -quit)
+          x86_64=$(find . -type f -name libmobileglues.so -path '*/x86_64/*' -print -quit)
+
+          echo "arm64: $arm64"
+          echo "arm32: $arm32"
+          echo "x86: $x86"
+          echo "x86_64: $x86_64"
 
           test -n "$arm64" && test -n "$arm32" && test -n "$x86" && test -n "$x86_64"
 
