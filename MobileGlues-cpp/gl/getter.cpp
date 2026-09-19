@@ -54,7 +54,14 @@ void glGetIntegerv(GLenum pname, GLint* params) {
         GLES.glGetIntegerv(pname - GL_BACKEND_GETTER_MG, params);
         return;
     case GL_CONTEXT_PROFILE_MASK:
+#if MG_LEGACY_1122
+        // Minecraft 1.12.2/LWJGL 2 uses the legacy desktop GL path.
+        // Advertise compatibility rather than core so OptiFine does not take
+        // the core-profile path when it probes the context.
+        (*params) = GL_CONTEXT_COMPATIBILITY_PROFILE_BIT;
+#else
         (*params) = GL_CONTEXT_CORE_PROFILE_BIT;
+#endif
         break;
     case GL_NUM_EXTENSIONS:
         static GLint num_extensions = -1;
