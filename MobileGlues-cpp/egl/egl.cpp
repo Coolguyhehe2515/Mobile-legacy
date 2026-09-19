@@ -30,7 +30,11 @@ namespace {
 
     constexpr EGLint kBackendDesktopGlClientVersion = 3;
     constexpr EGLint kBackendDesktopGlRenderableBit = EGL_OPENGL_ES3_BIT;
+#if MG_LEGACY_1122
+    constexpr EGLint kVirtualDesktopProfileMask = EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR;
+#else
     constexpr EGLint kVirtualDesktopProfileMask = EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT;
+#endif
     constexpr size_t kMaxEglAttributePairs = 128;
 
     thread_local EGLenum frontend_api = EGL_OPENGL_ES_API;
