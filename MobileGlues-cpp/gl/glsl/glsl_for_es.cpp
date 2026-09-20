@@ -675,18 +675,13 @@ int get_or_add_glsl_version(std::string& glsl) {
         glsl_version = 150;
         glsl.insert(0, "#version 150\n");
     } else if (glsl_version < 140) {
-        // Minecraft 1.12.2 commonly sends GLSL 1.20. glslang's compatibility
-        // built-in table contains double-precision declarations that are only
-        // legal from desktop GLSL 4.00 onward. Upgrading 1.20 to 1.50 therefore
-        // makes built-in initialization fail with:
-        //   'double' : not supported with this profile
-        //   INTERNAL ERROR: Unable to parse built-ins
-        //
-        // Use a 4.00 compatibility profile for the translation input instead.
-        // Compatibility keeps the legacy GLSL syntax accepted while giving
-        // glslang a profile/version where its generated built-ins are valid.
-        glsl = replace_line_starting_with(glsl, "#version", "#version 400 compatibility\n");
-        glsl_version = 400;
+        // Minecraft 1.12.2 commonly sends GLSL 1.20.
+        // Use the same legacy upgrade path as upstream MobileGlues. The
+        // compatibility qualifier keeps old GLSL syntax available to the
+        // glslang front-end without forcing GLSL 4.00 compatibility, which
+        // cannot be emitted directly to SPIR-V in this translation path.
+        glsl = replace_line_starting_with(glsl, "#version", "#version 150 compatibility\n");
+        glsl_version = 150;
     }
 
     LOG_D("GLSL version: %d", glsl_version)
@@ -725,7 +720,11 @@ std::vector<unsigned int> glsl_to_spirv(GLenum shader_type, int glsl_version, co
     shader.setStrings(shader_src, 1);
 
     using namespace glslang;
-    shader.setEnvInput(EShSourceGlsl, shader_language, EShClientOpenGL, glsl_version);
+    // Use the Vulkan GLSL dialect for the SPIR-V front-end. The generated
+    // SPIR-V is converted to GLES by SPIRV-Cross immediately afterwards.
+    // This is the upstream MobileGlues configuration and avoids sending the
+    // legacy compatibility profile directly through the OpenGL SPIR-V path.
+    shader.setEnvInput(EShSourceGlsl, shader_language, EShClientVulkan, glsl_version);
     shader.setEnvClient(EShClientOpenGL, EShTargetOpenGL_450);
     shader.setEnvTarget(EShTargetSpv, EShTargetSpv_1_5);
     shader.setAutoMapLocations(true);
@@ -734,14 +733,7 @@ std::vector<unsigned int> glsl_to_spirv(GLenum shader_type, int glsl_version, co
 
     TBuiltInResource TBuiltInResource_resources = InitResources();
 
-    // Minecraft 1.12.2 legacy shaders are rewritten to GLSL 4.00 compatibility.
-    // The short parse() overload defaults the profile to ENoProfile, which makes
-    // glslang reject built-ins such as double with "not supported with this profile: none".
-    // Pass the profile explicitly so the built-in table matches the shader source.
-    const EProfile glsl_profile = (glsl_version == 400) ? ECompatibilityProfile :
-                                   (glsl_version >= 150 ? ECoreProfile : ENoProfile);
-
-    if (!shader.parse(&TBuiltInResource_resources, glsl_version, glsl_profile, false, true, EShMsgDefault)) {
+    if (!shader.parse(&TBuiltInResource_resources, glsl_version, true, EShMsgDefault)) {
         LOG_D("GLSL Compiling ERROR: \n%s", shader.getInfoLog())
         errc = -1;
         return {};
