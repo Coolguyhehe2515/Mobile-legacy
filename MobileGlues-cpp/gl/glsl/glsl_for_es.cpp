@@ -390,9 +390,11 @@ std::string replace_line_starting_with(const std::string& glslCode, const std::s
             current++;
         }
 
-        // Check whether #line directive
+        // Check whether the current line starts with the requested directive.
+        // This helper is used for both #line removal and #version rewriting.
         bool isLineDirective = false;
-        if (current + 5 <= length && glslCode.compare(current, 5, "#line") == 0) {
+        if (current + starting.size() <= length &&
+            glslCode.compare(current, starting.size(), starting) == 0) {
             isLineDirective = true;
         }
 
