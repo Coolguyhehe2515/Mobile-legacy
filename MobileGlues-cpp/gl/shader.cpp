@@ -82,12 +82,20 @@ void glShaderSource(GLuint shader, GLsizei count, const GLchar* const* string, c
         essl_src = glsl_src;
     } else {
         int glsl_version = getGLSLVersion(glsl_src.c_str());
+        LOG_D("[ShaderTrace] id=%u original_len=%zu original_main=%s glsl_version=%d",
+              shader, glsl_src.size(),
+              glsl_src.find("void main") != std::string::npos ? "yes" : "no",
+              glsl_version);
         LOG_D("[INFO] [Shader] Shader source: ")
         LOG_D("%s", glsl_src.c_str())
         GLint shaderType;
         GLES.glGetShaderiv(shader, GL_SHADER_TYPE, &shaderType);
         int return_code = 0;
         essl_src = GLSLtoGLSLES(glsl_src.c_str(), shaderType, hardware->es_version, glsl_version, return_code);
+
+        LOG_D("[ShaderTrace] id=%u type=0x%x return_code=%d translated_len=%zu translated_main=%s",
+              shader, shaderType, return_code, essl_src.size(),
+              essl_src.find("void main") != std::string::npos ? "yes" : "no");
 
         if (essl_src.empty()) {
             LOG_E("Failed to convert shader %d.", shader)
