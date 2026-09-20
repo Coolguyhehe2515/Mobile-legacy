@@ -732,7 +732,14 @@ std::vector<unsigned int> glsl_to_spirv(GLenum shader_type, int glsl_version, co
 
     TBuiltInResource TBuiltInResource_resources = InitResources();
 
-    if (!shader.parse(&TBuiltInResource_resources, glsl_version, true, EShMsgDefault)) {
+    // Minecraft 1.12.2 legacy shaders are rewritten to GLSL 4.00 compatibility.
+    // The short parse() overload defaults the profile to ENoProfile, which makes
+    // glslang reject built-ins such as double with "not supported with this profile: none".
+    // Pass the profile explicitly so the built-in table matches the shader source.
+    const EProfile glsl_profile = (glsl_version == 400) ? ECompatibilityProfile :
+                                   (glsl_version >= 150 ? ECoreProfile : ENoProfile);
+
+    if (!shader.parse(&TBuiltInResource_resources, glsl_version, glsl_profile, false, true, EShMsgDefault)) {
         LOG_D("GLSL Compiling ERROR: \n%s", shader.getInfoLog())
         errc = -1;
         return {};
