@@ -99,7 +99,11 @@ void glShaderSource(GLuint shader, GLsizei count, const GLchar* const* string, c
         shaderInfo.id = shader;
         shaderInfo.converted = essl_src;
         const char* s[] = {essl_src.c_str()};
-        GLES.glShaderSource(shader, count, s, nullptr);
+        // The converted shader is a single contiguous source string. Do not reuse
+        // the caller's source count here: s contains exactly one string, and
+        // passing the original count can make GLES read past the array and report
+        // misleading errors such as "Missing main() function".
+        GLES.glShaderSource(shader, 1, s, nullptr);
         if (hardware->emulate_texture_buffer)
             shader_map_is_sampler_buffer_emulated[shader] = is_sampler_buffer_emulated;
     } else
