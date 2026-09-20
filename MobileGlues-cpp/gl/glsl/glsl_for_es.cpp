@@ -680,7 +680,7 @@ int get_or_add_glsl_version(std::string& glsl) {
         // compatibility qualifier keeps old GLSL syntax available to the
         // glslang front-end without forcing GLSL 4.00 compatibility, which
         // cannot be emitted directly to SPIR-V in this translation path.
-        glsl = replace_line_starting_with(glsl, "#version", "#version 150\n");
+        glsl = replace_line_starting_with(glsl, "#version", "#version 150 compatibility\n");
         glsl_version = 150;
     }
 
