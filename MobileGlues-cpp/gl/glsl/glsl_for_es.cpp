@@ -367,7 +367,7 @@ std::string GLSLtoGLSLES(const char* glsl_code, GLenum glsl_type, uint essl_vers
         Cache::get_instance().put(sha256_string.c_str(), converted.c_str());
     }
 
-    return (return_code >= 0) ? converted : glsl_code;
+    return (return_code >= 0) ? converted : std::string{};
 }
 
 std::string replace_line_starting_with(const std::string& glslCode, const std::string& starting,
@@ -680,7 +680,7 @@ int get_or_add_glsl_version(std::string& glsl) {
         // compatibility qualifier keeps old GLSL syntax available to the
         // glslang front-end without forcing GLSL 4.00 compatibility, which
         // cannot be emitted directly to SPIR-V in this translation path.
-        glsl = replace_line_starting_with(glsl, "#version", "#version 150 compatibility\n");
+        glsl = replace_line_starting_with(glsl, "#version", "#version 150\n");
         glsl_version = 150;
     }
 
